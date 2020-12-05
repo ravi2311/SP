@@ -1,0 +1,18 @@
+--Query for ListDetails
+select ld.SiteID,site.SiteURL,ld.WebID,web.WebURL,ld.ListName,
+ld.ListDescription,ld.ListItemCount,ld.ListColumns,ld.CreatedBy,ld.CreatedDate
+from
+IM_SPListDetails ld
+inner join IM_SPSiteMaster site
+on ld.SiteID=site.SiteID
+left join IM_SPWebMaster web
+on ld.WebID = web.WebID
+--Query for DocList
+select ld.SiteID,site.SiteURL,ld.WebID,web.WebURL,ld.DocName,
+ld.FileType,ld.DocPath,ld.DocSize,ld.CreatedBy,ld.CreatedDate
+from
+IM_SPDocLibDetails ld
+inner join IM_SPSiteMaster site
+on ld.SiteID=site.SiteID
+left join IM_SPWebMaster web
+on ld.WebID = web.WebID
