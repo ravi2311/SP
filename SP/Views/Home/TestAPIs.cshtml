@@ -1,0 +1,128 @@
+﻿
+@{
+    ViewBag.Title = "TestAPIs";
+}
+<hr />
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h3 class="panel-title">Test REST APIs</h3>
+    </div>
+    <div class="panel-body">
+        <div class="row">
+            <div class="form-group col-md-4">
+                <label class="control-label">API</label>
+                <select id="API" class="form-control">
+                    <option value="itemcount">ItemCount</option>
+                    <option value="spmetadata">SPMetaData</option>
+                </select>
+            </div>
+            <div class="form-group col-md-4">
+                <label class="control-label">SiteID</label>
+                <input type="text" id="SiteID" class="form-control" />
+            </div>
+            <div class="form-group col-md-4">
+                <label class="control-label">Site URL</label>
+                <input type="text" id="SiteURL" class="form-control" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-4">
+                <label class="control-label">List Data</label>
+                <select id="ListData" class="form-control">
+                    <option value="true">True</option>
+                    <option value="false">False</option>
+                </select>
+            </div>
+            <div class="form-group col-md-4">
+                <label class="control-label">Last Modified DateFrom</label>
+                <input type="date" id="DateFrom" class="form-control" />
+            </div>
+            <div class="form-group col-md-4">
+                <label class="control-label">Last Modified DateTo</label>
+                <input type="date" id="DateTo" class="form-control" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-md-4">
+                <label class="control-label">Page</label>
+                <input type="number" value="1" min="1" id="Page" class="form-control" />
+            </div>
+            <div class="form-group col-md-4">
+                <label class="control-label">Page Size</label>
+                <input type="number" value="1000" id="PageSize" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-primary" id="BtnSearch">Search</button>
+            </div>
+        </div>
+        <hr />
+        <h5 id="APIUrl"></h5>
+        <hr />
+        <div id="SectionResult"></div>
+        
+    </div>
+</div>
+@section scripts{
+    <script>
+
+        $(document).ready(function () {
+            $('#BtnSearch').click(function () {
+                var api = $('#API').val();
+                var SiteID = $('#SiteID').val();
+                var SiteURL = $('#SiteURL').val();
+                var IsList = $('#ListData').val();
+                var DateFrom = $('#DateFrom').val();
+                var DateTo = $('#DateTo').val();
+                debugger
+                var Page = $('#Page').val();
+                var PageSize = $('#PageSize').val();
+                if (api == "itemcount") {
+                    //ItemCount API
+                    var url = '/api/spmetadacollector/get?isList=' + IsList + '&siteid=' + SiteID + '&siteCollection=' + SiteURL + '&DateFrom=' + DateFrom + '&DateTo=' + DateTo;
+                    $('#APIUrl').text("REST API URL: "+url);
+                    $.ajax(url, {
+                        success: function (res) {
+                            var table = "<table class='table table-bordered'><thead><tr><td>Item Count</td><td>Last Modified Date</td><td>Last Crawl Date</td></tr></thead><tbody><tr><td>" + res.ItemCount + "</td><td>" + res.LastModifiedDate + "</td><td>" + res.LastCrawlDate + "</td></tr></tbody></table>";
+                            $("#SectionResult").html(table);
+                        },
+                        error: function (err) {
+                            alert(err.responseText);
+                        }
+                    });
+                } else {
+                    //Meta Data API
+                    var url = '/api/spmetadacollector/get?isList=' + IsList + '&siteid=' + SiteID + '&siteCollection=' + SiteURL + '&page=' + Page + '&pageSize=' + PageSize + '&DateFrom=' + DateFrom + '&DateTo=' + DateTo;
+                    $('#APIUrl').text("REST API URL: "+url);
+
+                    $.ajax(url, {
+                        success: function (res) {
+                            var table = "<table class='table table-bordered'><thead><tr><td>SiteID</td><td>SiteURL</td><td>WebID</td><td>WebURL</td>";
+                            if (IsList == "true") {
+                                table += "<td>List Name</td><td>List Description</td><td>List Item Counts</td><td>List Columns</td><td>Created By</td><td>Created Date</td>";
+                            } else {
+                                table += "<td>Doc Name</td><td>File Type</td><td>Doc Path</td><td>Doc Size</td><td>Created By</td><td>Created Date</td>";
+                            }
+                            table += "</tr></thead><tbody>";
+                            $.each(res, function (i, v) {
+                                var row = "<tr><td>" + v.SiteID + "</td><td>" + v.SiteURL + "</td><td>" + v.WebID + "</td><td>" + v.WebURL + "</td>";
+                                if (IsList == "true") {
+                                    row += "<td>" + v.ListName + "</td><td>" + v.ListDescription + "</td><td>" + v.ListItemCount + "</td><td>" + v.ListColumns + "</td><td>" + v.CreatedBy + "</td><td>" + v.CreatedDate +"</td>";
+                                } else {
+                                    row += "<td>"+v.DocName+"</td><td>"+v.FileType+"</td><td>"+v.DocPath+"</td><td>"+v.DocSize+"</td><td>"+v.CreatedBy+"</td><td>"+v.CreatedDate+"</td>";
+                                }
+                                row += "</tr>";
+                                table += row;
+                            });
+                            table += "</tbody></table>";
+                            $('#SectionResult').html(table);
+                        },
+                        error: function (err) {
+                            alert(err.responseText);
+                        }
+                    });
+
+                }
+            });
+        });
+    </script>
+    }
