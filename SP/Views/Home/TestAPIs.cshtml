@@ -21,7 +21,7 @@
                 <input type="text" id="SiteID" class="form-control" />
             </div>
             <div class="form-group col-md-4">
-                <label class="control-label">Site URL</label>
+                <label class="control-label">Or Site URL</label>
                 <input type="text" id="SiteURL" class="form-control" />
             </div>
         </div>
@@ -51,21 +51,37 @@
                 <label class="control-label">Page Size</label>
                 <input type="number" value="1000" id="PageSize" class="form-control" />
             </div>
-            <div class="col-md-4">
-                <button class="btn btn-primary" id="BtnSearch">Search</button>
+
+        </div>
+        <div class="row">
+            <div class="form-group col-md-12 text-center">
+                <button class="btn btn-primary btn-block" id="BtnSearch">Search</button>
             </div>
+
         </div>
         <hr />
         <h5 id="APIUrl"></h5>
+        <h5 id="TotalItemCount"></h5>
         <hr />
         <div id="SectionResult"></div>
-        
+
     </div>
 </div>
 @section scripts{
     <script>
 
         $(document).ready(function () {
+            $('#Page').parent().hide();
+            $('#PageSize').parent().hide();
+            $('#API').change(function () {
+                if ($(this).val() == "itemcount") {
+                    $('#Page').parent().hide();
+                    $('#PageSize').parent().hide();
+                } else {
+                    $('#Page').parent().show();
+                    $('#PageSize').parent().show();
+                }
+            });
             $('#BtnSearch').click(function () {
                 var api = $('#API').val();
                 var SiteID = $('#SiteID').val();
@@ -76,13 +92,23 @@
                 debugger
                 var Page = $('#Page').val();
                 var PageSize = $('#PageSize').val();
+                $('#TotalItemCount').html("");
                 if (api == "itemcount") {
                     //ItemCount API
-                    var url = '/api/spmetadacollector/get?isList=' + IsList + '&siteid=' + SiteID + '&siteCollection=' + SiteURL + '&DateFrom=' + DateFrom + '&DateTo=' + DateTo;
-                    $('#APIUrl').text("REST API URL: "+url);
+                    var url = '/api/spmetadacollector/get?isList=' + IsList;
+                    if (SiteID != "")
+                        url += '&siteid=' + SiteID;
+                    if (SiteURL != "")
+                        url += '&siteCollection=' + SiteURL;
+                    if (DateFrom != "")
+                        url += '&DateFrom=' + DateFrom;
+                    if (DateTo != "")
+                        url += '&DateTo=' + DateTo;
+                    //
+                    $('#APIUrl').html("<label class='control-label'>REST API URL: </label> <a target='_blank' href='" + url + "'>" + url + "</a>");
                     $.ajax(url, {
                         success: function (res) {
-                            var table = "<table class='table table-bordered'><thead><tr><td>Item Count</td><td>Last Modified Date</td><td>Last Crawl Date</td></tr></thead><tbody><tr><td>" + res.ItemCount + "</td><td>" + res.LastModifiedDate + "</td><td>" + res.LastCrawlDate + "</td></tr></tbody></table>";
+                            var table = "<div class='table-responsive'><table class='table table-bordered'><thead><tr><td>Item Count</td><td>Last Modified Date</td><td>Last Crawl Date</td></tr></thead><tbody><tr><td>" + res.ItemCount + "</td><td>" + res.LastModifiedDate + "</td><td>" + res.LastCrawlDate + "</td></tr></tbody></table></div>";
                             $("#SectionResult").html(table);
                         },
                         error: function (err) {
@@ -91,29 +117,45 @@
                     });
                 } else {
                     //Meta Data API
-                    var url = '/api/spmetadacollector/get?isList=' + IsList + '&siteid=' + SiteID + '&siteCollection=' + SiteURL + '&page=' + Page + '&pageSize=' + PageSize + '&DateFrom=' + DateFrom + '&DateTo=' + DateTo;
-                    $('#APIUrl').text("REST API URL: "+url);
+                    var url = '/api/spmetadacollector/get?isList=' + IsList;
+                    url += '&page=' + Page + '&pageSize=' + PageSize;
+                    if (SiteID != "")
+                        url += '&siteid=' + SiteID;
+                    if (SiteURL != "")
+                        url += '&siteCollection=' + SiteURL;
+                    if (DateFrom != "")
+                        url += '&DateFrom=' + DateFrom;
+                    if (DateTo != "")
+                        url += '&DateTo=' + DateTo;
+
+                    $('#APIUrl').html("<label class='control-label'>REST API URL: </label> <a target='_blank' href='" + url + "'>" + url + "</a>");
 
                     $.ajax(url, {
                         success: function (res) {
-                            var table = "<table class='table table-bordered'><thead><tr><td>SiteID</td><td>SiteURL</td><td>WebID</td><td>WebURL</td>";
+                            var table = "<div class='table-responsive'><table class='table table-bordered'><thead><tr><td>S.NO.</td><td>SiteID</td><td>SiteURL</td><td>WebID</td><td>WebURL</td>";
                             if (IsList == "true") {
                                 table += "<td>List Name</td><td>List Description</td><td>List Item Counts</td><td>List Columns</td><td>Created By</td><td>Created Date</td>";
                             } else {
                                 table += "<td>Doc Name</td><td>File Type</td><td>Doc Path</td><td>Doc Size</td><td>Created By</td><td>Created Date</td>";
                             }
                             table += "</tr></thead><tbody>";
+                            if (res.length == 0) {
+                                table += '<tr><td colspan="10" class="text-center">No Record Found.!</td></tr>';
+                            }
+                            $('#TotalItemCount').html("<label classs='control-label'>TOTAL ITEMS COUNT: </label><b>" + res.length+"</b>");
+                            var sno = 1;
+
                             $.each(res, function (i, v) {
-                                var row = "<tr><td>" + v.SiteID + "</td><td>" + v.SiteURL + "</td><td>" + v.WebID + "</td><td>" + v.WebURL + "</td>";
+                                var row = "<tr><td>" + sno++ + "</td><td>" + v.SiteID + "</td><td>" + v.SiteURL + "</td><td>" + v.WebID + "</td><td>" + v.WebURL + "</td>";
                                 if (IsList == "true") {
-                                    row += "<td>" + v.ListName + "</td><td>" + v.ListDescription + "</td><td>" + v.ListItemCount + "</td><td>" + v.ListColumns + "</td><td>" + v.CreatedBy + "</td><td>" + v.CreatedDate +"</td>";
+                                    row += "<td>" + v.ListName + "</td><td>" + v.ListDescription + "</td><td>" + v.ListItemCount + "</td><td>" + v.ListColumns + "</td><td>" + v.CreatedBy + "</td><td>" + v.CreatedDate + "</td>";
                                 } else {
-                                    row += "<td>"+v.DocName+"</td><td>"+v.FileType+"</td><td>"+v.DocPath+"</td><td>"+v.DocSize+"</td><td>"+v.CreatedBy+"</td><td>"+v.CreatedDate+"</td>";
+                                    row += "<td>" + v.DocName + "</td><td>" + v.FileType + "</td><td>" + v.DocPath + "</td><td>" + v.DocSize + "</td><td>" + v.CreatedBy + "</td><td>" + v.CreatedDate + "</td>";
                                 }
                                 row += "</tr>";
                                 table += row;
                             });
-                            table += "</tbody></table>";
+                            table += "</tbody></table></div>";
                             $('#SectionResult').html(table);
                         },
                         error: function (err) {
@@ -125,4 +167,4 @@
             });
         });
     </script>
-    }
+}

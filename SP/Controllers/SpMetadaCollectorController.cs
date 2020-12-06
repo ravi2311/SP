@@ -41,8 +41,8 @@ namespace SP.Controllers
                 return Json(new
                 {
                     ItemCount = listDetails.Count(),
-                    LastModifiedDate = listDetails.OrderByDescending(e => e.ModifiedDate).FirstOrDefault()?.ModifiedDate,
-                    LastCrawlDate = mostRecentJobEndDate?.JobEndDate,
+                    LastModifiedDate = listDetails.OrderByDescending(e => e.ModifiedDate).FirstOrDefault()?.ModifiedDate?.ToString("yyyy-MM-dd hh:mm:ss tt"),
+                    LastCrawlDate = mostRecentJobEndDate?.JobEndDate?.ToString("yyyy-MM-dd hh:mm:ss tt"),
                 });
             }
             else
@@ -56,8 +56,8 @@ namespace SP.Controllers
                 return Json(new
                 {
                     ItemCount = libDetails.Count(),
-                    LastModifiedDate = libDetails.OrderByDescending(e => e.ModifiedDate).FirstOrDefault()?.ModifiedDate,
-                    LastCrawlDate = mostRecentJobEndDate?.JobEndDate,
+                    LastModifiedDate = libDetails.OrderByDescending(e => e.ModifiedDate).FirstOrDefault()?.ModifiedDate?.ToString("yyyy-MM-dd hh:mm:ss tt"),
+                    LastCrawlDate = mostRecentJobEndDate?.JobEndDate?.ToString("yyyy-MM-dd hh:mm:ss tt"),
                 });
             }
         }
@@ -74,7 +74,7 @@ namespace SP.Controllers
             if (isList)
             {
                 //ListDetails
-                var data = from ld in db.ListDetails
+                var data = (from ld in db.ListDetails
                            join site in db.SiteMaster on ld.SiteID equals site.SiteID
                            join web in db.WebMaster on ld.WebID equals web.WebID into ldweb
                            from web in ldweb.DefaultIfEmpty()
@@ -92,14 +92,26 @@ namespace SP.Controllers
                                ld.ListColumns,
                                ld.CreatedBy,
                                ld.CreatedDate
-                           };
-
-                return Json(data.OrderBy(e => e.CreatedDate).Skip((page - 1) * pageSize).Take(pageSize));
+                           }).OrderBy(e => e.CreatedDate).Skip((page - 1) * pageSize).Take(pageSize).ToList();
+                //Data preprocessing
+                var finalResult=data.Select(e=>new {
+                    e.SiteID,
+                    e.SiteURL,
+                    e.WebID,
+                    e.WebURL,
+                    e.ListName,
+                    e.ListDescription,
+                    e.ListItemCount,
+                    e.ListColumns,
+                    CreatedDate=e.CreatedDate.Value.ToString("yyyy-MM-dd hh:mm:ss tt"),
+                    CreatedBy = e.CreatedBy.Substring(e.CreatedBy.IndexOf("#")+1)
+                });
+                return Json(finalResult);
             }
             else
             {
                 //Doc
-                var data = from ld in db.DocLibDetails
+                var data = (from ld in db.DocLibDetails
                            join site in db.SiteMaster on ld.SiteID equals site.SiteID
                            join web in db.WebMaster on ld.WebID equals web.WebID into ldwe
                            from web in ldwe.DefaultIfEmpty()
@@ -117,8 +129,21 @@ namespace SP.Controllers
                                ld.DocSize,
                                ld.CreatedBy,
                                ld.CreatedDate
-                           };
-                return Json(data.OrderBy(e => e.CreatedDate).Skip((page - 1) * pageSize).Take(pageSize));
+                           }).OrderBy(e => e.CreatedDate).Skip((page - 1) * pageSize).Take(pageSize).ToList();
+                //Data preprocessing
+                var finalResult = data.Select(e => new {
+                    e.SiteID,
+                    e.SiteURL,
+                    e.WebID,
+                    e.WebURL,
+                    e.DocName,
+                    e.FileType,
+                    e.DocPath,
+                    e.DocSize,
+                    CreatedDate= e.CreatedDate.Value.ToString("yyyy-MM-dd hh:mm:ss tt"),
+                    CreatedBy = e.CreatedBy.Substring(e.CreatedBy.IndexOf("#")+1)
+                });
+                return Json(finalResult);
             }
         }
     }
