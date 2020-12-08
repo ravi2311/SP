@@ -134,13 +134,16 @@
                         success: function (res) {
                             var table = "<div class='table-responsive'><table class='table table-bordered'><thead><tr><td>S.NO.</td><td>SiteID</td><td>SiteURL</td><td>WebID</td><td>WebURL</td>";
                             if (IsList == "true") {
-                                table += "<td>List Name</td><td>List Description</td><td>List Item Counts</td><td>List Columns</td><td>Created By</td><td>Created Date</td>";
+                                table += "<td>List Name</td><td>List Description</td><td>List Item Counts</td><td>List Columns</td><td>Created By</td><td>Created Date</td><td>Modified By</td><td>Modified Date</td>";
                             } else {
                                 table += "<td>Doc Name</td><td>File Type</td><td>Doc Path</td><td>Doc Size</td><td>Created By</td><td>Created Date</td>";
                             }
                             table += "</tr></thead><tbody>";
                             if (res.length == 0) {
-                                table += '<tr><td colspan="10" class="text-center">No Record Found.!</td></tr>';
+                                if (IsList=="true")
+                                    table += '<tr><td colspan="13" class="text-center">No Record Found.!</td></tr>';
+                                else
+                                    table += '<tr><td colspan="11" class="text-center">No Record Found.!</td></tr>';
                             }
                             $('#TotalItemCount').html("<label classs='control-label'>TOTAL ITEMS COUNT: </label><b>" + res.length+"</b>");
                             var sno = 1;
@@ -148,7 +151,7 @@
                             $.each(res, function (i, v) {
                                 var row = "<tr><td>" + sno++ + "</td><td>" + v.SiteID + "</td><td>" + v.SiteURL + "</td><td>" + v.WebID + "</td><td>" + v.WebURL + "</td>";
                                 if (IsList == "true") {
-                                    row += "<td>" + v.ListName + "</td><td>" + v.ListDescription + "</td><td>" + v.ListItemCount + "</td><td>" + v.ListColumns + "</td><td>" + v.CreatedBy + "</td><td>" + v.CreatedDate + "</td>";
+                                    row += "<td>" + v.ListName + "</td><td>" + v.ListDescription + "</td><td>" + v.ListItemCount + "</td><td>" + v.ListColumns + "</td><td>" + v.CreatedBy + "</td><td>" + v.CreatedDate + "</td>"+"<td>"+v.ModifiedBy+"</td><td>"+v.ModifiedDate+"</td>";
                                 } else {
                                     row += "<td>" + v.DocName + "</td><td>" + v.FileType + "</td><td>" + v.DocPath + "</td><td>" + v.DocSize + "</td><td>" + v.CreatedBy + "</td><td>" + v.CreatedDate + "</td>";
                                 }

@@ -91,7 +91,9 @@ namespace SP.Controllers
                                ld.ListItemCount,
                                ld.ListColumns,
                                ld.CreatedBy,
-                               ld.CreatedDate
+                               ld.CreatedDate,
+                               ld.ModifiedBy,
+                               ld.ModifiedDate
                            }).OrderBy(e => e.CreatedDate).Skip((page - 1) * pageSize).Take(pageSize).ToList();
                 //Data preprocessing
                 var finalResult=data.Select(e=>new {
@@ -104,7 +106,9 @@ namespace SP.Controllers
                     e.ListItemCount,
                     e.ListColumns,
                     CreatedDate=e.CreatedDate.Value.ToString("yyyy-MM-dd hh:mm:ss tt"),
-                    CreatedBy = e.CreatedBy.Substring(e.CreatedBy.IndexOf("#")+1)
+                    CreatedBy = e.CreatedBy.Substring(e.CreatedBy.IndexOf("#")+1),
+                    ModifiedDate=e.ModifiedDate.Value.ToString("yyyy-MM-dd hh:mm:ss tt"),
+                    ModifiedBy = e.ModifiedBy.Substring(e.CreatedBy.IndexOf("#")+1)
                 });
                 return Json(finalResult);
             }
@@ -141,7 +145,7 @@ namespace SP.Controllers
                     e.DocPath,
                     e.DocSize,
                     CreatedDate= e.CreatedDate.Value.ToString("yyyy-MM-dd hh:mm:ss tt"),
-                    CreatedBy = e.CreatedBy.Substring(e.CreatedBy.IndexOf("#")+1)
+                    CreatedBy = e.CreatedBy.Substring(e.CreatedBy.IndexOf("#")+1),
                 });
                 return Json(finalResult);
             }
